@@ -12,28 +12,37 @@ datasource db {
 }
 
 model Record {
-  id          Int       @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   title       String
   description String?
-  date        DateTime  // 日付と時刻を含む
-  startTime   String?   // HH:MM形式などの文字列として時刻を格納
-  endTime     String?   // HH:MM形式などの文字列として時刻を格納
-  tags        Tag[]     @relation
-  recordTags  RecordTag[]
+  date        DateTime        // 日付と時刻を含む
+  startTime   String?         // HH:MM形式などの文字列として時刻を格納
+  endTime     String?         // HH:MM形式などの文字列として時刻を格納
+  practiceDetails PracticeDetail[]
+}
+
+model PracticeDetail {
+  id          Int             @id @default(autoincrement())
+  recordId    Int             // Recordモデルへの参照
+  content     String          // 稽古の内容
+  duration    Int?            // 稽古の時間（分）
+  record      Record          @relation(fields: [recordId], references: [id])
+  practiceTags PracticeTag[]
+
+  @@index([recordId], name: "idx_practice_detail_record_id")
 }
 
 model Tag {
-  id          Int       @id @default(autoincrement())
-  name        String
-  records     Record[]  @relation
-  recordTags  RecordTag[] // この行を追加
+  id            Int             @id @default(autoincrement())
+  name          String
+  practiceTags  PracticeTag[]
 }
 
-model RecordTag {
-  record   Record @relation(fields: [recordId], references: [id])
-  recordId Int
-  tag      Tag    @relation(fields: [tagId], references: [id])
-  tagId    Int
+model PracticeTag {
+  practiceDetail   PracticeDetail @relation(fields: [practiceDetailId], references: [id])
+  practiceDetailId Int
+  tag              Tag            @relation(fields: [tagId], references: [id])
+  tagId            Int
 
-  @@id([recordId, tagId])
+  @@id([practiceDetailId, tagId])
 }
