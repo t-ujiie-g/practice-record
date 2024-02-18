@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model Record {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  date        DateTime  // 日付と時刻を含む
+  startTime   String?   // HH:MM形式などの文字列として時刻を格納
+  endTime     String?   // HH:MM形式などの文字列として時刻を格納
+  tags        Tag[]     @relation
+  recordTags  RecordTag[]
+}
+
+model Tag {
+  id          Int       @id @default(autoincrement())
+  name        String
+  records     Record[]  @relation
+  recordTags  RecordTag[] // この行を追加
+}
+
+model RecordTag {
+  record   Record @relation(fields: [recordId], references: [id])
+  recordId Int
+  tag      Tag    @relation(fields: [tagId], references: [id])
+  tagId    Int
+
+  @@id([recordId, tagId])
+}
