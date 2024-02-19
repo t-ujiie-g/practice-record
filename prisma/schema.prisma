@@ -13,7 +13,7 @@ datasource db {
 
 model Record {
   id          Int             @id @default(autoincrement())
-  title       String
+  // title       String
   description String?
   date        DateTime        // 日付と時刻を含む
   startTime   String?         // HH:MM形式などの文字列として時刻を格納
@@ -25,7 +25,7 @@ model PracticeDetail {
   id          Int             @id @default(autoincrement())
   recordId    Int             // Recordモデルへの参照
   content     String          // 稽古の内容
-  duration    Int?            // 稽古の時間（分）
+  // duration    Int?            // 稽古の時間（分）
   record      Record          @relation(fields: [recordId], references: [id])
   practiceTags PracticeTag[]
 
