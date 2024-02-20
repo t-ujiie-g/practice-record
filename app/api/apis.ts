@@ -35,7 +35,7 @@ export async function createRecord(recordData: PracticeRecord) {
         startTime: recordData.startTime,
         startMinute: recordData.startMinute,
         endTime: recordData.endTime,
-        endMinute: recordData.endTime,
+        endMinute: recordData.endMinute,
         practiceDetails: {
           create: recordData.practiceDetails.map(detail => ({
             content: detail.content,
