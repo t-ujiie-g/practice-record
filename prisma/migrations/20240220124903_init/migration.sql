@@ -1,36 +1,29 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE "Record" (
+    "id" SERIAL NOT NULL,
+    "description" TEXT,
+    "date" TIMESTAMP(3) NOT NULL,
+    "startTime" TEXT,
+    "endTime" TEXT,
 
-  - You are about to drop the `RecordTag` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `_RecordToTag` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE "RecordTag" DROP CONSTRAINT "RecordTag_recordId_fkey";
-
--- DropForeignKey
-ALTER TABLE "RecordTag" DROP CONSTRAINT "RecordTag_tagId_fkey";
-
--- DropForeignKey
-ALTER TABLE "_RecordToTag" DROP CONSTRAINT "_RecordToTag_A_fkey";
-
--- DropForeignKey
-ALTER TABLE "_RecordToTag" DROP CONSTRAINT "_RecordToTag_B_fkey";
-
--- DropTable
-DROP TABLE "RecordTag";
-
--- DropTable
-DROP TABLE "_RecordToTag";
+    CONSTRAINT "Record_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "PracticeDetail" (
     "id" SERIAL NOT NULL,
     "recordId" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
-    "duration" INTEGER,
 
     CONSTRAINT "PracticeDetail_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Tag" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "Tag_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable

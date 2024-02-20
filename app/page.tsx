@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { createRecord } from '@/app/api/apis';
+import { HOUR_TIME, MINUTE_TIME } from '@/app/const';
 
 interface PracticeDetailInput {
   content: string;
@@ -12,9 +13,11 @@ interface PracticeDetailInput {
 export default function CreateRecord() {
   const [description, setDescription] = useState('');
   const [targetDate, setTargetDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [practiceDetails, setPracticeDetails] = useState<PracticeDetailInput[]>([{ content: '', tags: [''] }]);
+  const [startTime, setStartTime] = useState('10時');
+  const [startMinute, setStartMinute] = useState('00分');
+  const [endTime, setEndTime] = useState('11時');
+  const [endMinute, setEndMinute] = useState('30分');
+  const [practiceDetails, setPracticeDetails] = useState<PracticeDetailInput[]>([{ content: '', tags: [] }]);
 
   const handlePracticeDetailChange = (index: number, field: keyof PracticeDetailInput, value: string) => {
     const newDetails = [...practiceDetails];
@@ -27,7 +30,7 @@ export default function CreateRecord() {
   };
 
   const addPracticeDetail = () => {
-    setPracticeDetails([...practiceDetails, { content: '', tags: [''] }]);
+    setPracticeDetails([...practiceDetails, { content: '', tags: [] }]);
   };
   // 詳細項目を削除する関数
   const removePracticeDetail = (index: number) => {
@@ -40,16 +43,20 @@ export default function CreateRecord() {
       description: description,
       date: new Date(targetDate),
       startTime: startTime,
+      startMinute: startMinute,
       endTime: endTime,
+      endMinute: endMinute,
       practiceDetails: practiceDetails,
     };
     try {
       await createRecord(submitData);
       setDescription('');
       setTargetDate(() => new Date().toISOString().split('T')[0]);
-      setStartTime('');
-      setEndTime('');
-      setPracticeDetails([{ content: '', tags: [''] }]);
+      setStartTime('10時');
+      setStartMinute('00分');
+      setEndTime('11時');
+      setEndMinute('30分')
+      setPracticeDetails([{ content: '', tags: [] }]);
       alert('稽古記録が作成されました');
     } catch (error) {
       console.error('稽古記録の作成に失敗しました。', error);
@@ -81,16 +88,40 @@ export default function CreateRecord() {
           <input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
         </label>
       </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">
+      <div className="mb-4 flex items-center">
+        <label className="block text-gray-700 text-sm font-bold mb-2 mr-2">
           開始時間:
-          <input type="text" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+          <select value={startTime} onChange={(e) => setStartTime(e.target.value)} className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            {HOUR_TIME.map((hour, index) => (
+              <option key={index} value={hour}>{hour}</option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-gray-700 text-sm font-bold mb-2">
+          分:
+          <select value={startMinute} onChange={(e) => setStartMinute(e.target.value)} className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            {MINUTE_TIME.map((minute, index) => (
+              <option key={index} value={minute}>{minute}</option>
+            ))}
+          </select>
         </label>
       </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">
+      <div className="mb-4 flex items-center">
+        <label className="block text-gray-700 text-sm font-bold mb-2 mr-2">
           終了時間:
-          <input type="text" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+          <select value={endTime} onChange={(e) => setEndTime(e.target.value)} className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            {HOUR_TIME.map((hour, index) => (
+              <option key={index} value={hour}>{hour}</option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-gray-700 text-sm font-bold mb-2">
+          分:
+          <select value={endMinute} onChange={(e) => setEndMinute(e.target.value)} className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            {MINUTE_TIME.map((minute, index) => (
+              <option key={index} value={minute}>{minute}</option>
+            ))}
+          </select>
         </label>
       </div>
       <div className="mb-4">
@@ -122,14 +153,14 @@ export default function CreateRecord() {
                 ))}
                 <input
                   type="text"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && e.currentTarget.value) {
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.currentTarget.value) {
                       e.preventDefault();
                       addTag(index, e.currentTarget.value);
                       e.currentTarget.value = ''; // 入力フィールドをクリア
                     }
                   }}
-                  className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded py-2 px-3 m-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   placeholder="タグを追加..."
                 />
               </div>

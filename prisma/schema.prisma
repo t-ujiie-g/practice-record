@@ -17,7 +17,9 @@ model Record {
   description String?
   date        DateTime        // 日付と時刻を含む
   startTime   String?         // HH:MM形式などの文字列として時刻を格納
+  startMinute String?
   endTime     String?         // HH:MM形式などの文字列として時刻を格納
+  endMinute   String?
   practiceDetails PracticeDetail[]
 }
 
@@ -34,7 +36,7 @@ model PracticeDetail {
 
 model Tag {
   id            Int             @id @default(autoincrement())
-  name          String
+  name          String          @unique
   practiceTags  PracticeTag[]
 }
 
