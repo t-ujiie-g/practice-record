@@ -50,7 +50,11 @@ export async function getAllRecords() {
       include: {
         practiceDetails: {
           include: {
-            practiceTags: true,
+            practiceTags: {
+              include: {
+                tag: true, // `tag` オブジェクトを含めるように変更
+              },
+            },
           },
         },
       },
