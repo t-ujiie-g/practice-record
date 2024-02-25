@@ -18,8 +18,8 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className="flex flex-col">
-        <header className="bg-gray-700 text-white p-6">
-          <div className="container mx-auto flex items-center fixed top-2 left-10 right-10 z-100">
+        <header className="bg-gray-700 text-white p-6 z-50 fixed top-0 left-0 right-0">
+          <div className="container mx-auto flex items-center fixed top-2 left-10 right-10">
             <Link href="/">
               <h1 className="text-lg font-bold mr-10">aPra</h1>
             </Link>
@@ -39,7 +39,7 @@ export default function RootLayout({
             </nav>
           </div>
         </header>
-        <main className="flex-grow container mx-auto p-4">
+        <main className="flex-grow container p-4 pt-16">
           {children}
         </main>
       </body>

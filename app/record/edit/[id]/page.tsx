@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import { createRecord } from '@/app/api/apis';
+import { getRecordById, updateRecordById } from '@/app/api/apis';
 import { HOUR_TIME, MINUTE_TIME, CONTENTS_LIST } from '@/app/const';
 
 interface PracticeDetailInput {
@@ -10,14 +11,41 @@ interface PracticeDetailInput {
   tags: string[];
 }
 
-export default function CreateRecord() {
+export default function EditRecord() {
+  const pathName = usePathname();
+  const id = pathName.split("/").pop();
+
+  const router = useRouter();
   const [description, setDescription] = useState('');
-  const [targetDate, setTargetDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [startTime, setStartTime] = useState('10時');
-  const [startMinute, setStartMinute] = useState('00分');
-  const [endTime, setEndTime] = useState('11時');
-  const [endMinute, setEndMinute] = useState('30分');
-  const [practiceDetails, setPracticeDetails] = useState<PracticeDetailInput[]>([{ content: '一教', tags: [] }]);
+  const [targetDate, setTargetDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [startMinute, setStartMinute] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [endMinute, setEndMinute] = useState('');
+  const [practiceDetails, setPracticeDetails] = useState<PracticeDetailInput[]>([]);
+
+  useEffect(() => {
+    const fetchRecord = async () => {
+      if (!id) return;
+      try {
+        const data = await getRecordById(Number(id));
+        setDescription(data.description || '');
+        setTargetDate(data.date.toISOString().split('T')[0]); // 日付のフォーマットを調整
+        setStartTime(data.startTime || '');
+        setStartMinute(data.startMinute || '');
+        setEndTime(data.endTime || '');
+        setEndMinute(data.endMinute || '');
+        setPracticeDetails(data.practiceDetails.map(detail => ({
+          content: detail.content,
+          tags: detail.practiceTags.map(tag => tag.tag.name),
+        })));
+      } catch (error) {
+        console.error('記録の取得に失敗しました。', error);
+      }
+    };
+
+    fetchRecord();
+  }, [id]);
 
   const handlePracticeDetailChange = (index: number, field: keyof PracticeDetailInput, value: string) => {
     const newDetails = [...practiceDetails];
@@ -30,40 +58,13 @@ export default function CreateRecord() {
   };
 
   const addPracticeDetail = () => {
-    setPracticeDetails([...practiceDetails, { content: '一教', tags: [] }]);
+    setPracticeDetails([...practiceDetails, { content: '', tags: [] }]);
   };
-  // 詳細項目を削除する関数
+
   const removePracticeDetail = (index: number) => {
     setPracticeDetails(currentDetails => currentDetails.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const submitData = {
-      description: description,
-      date: new Date(targetDate),
-      startTime: startTime,
-      startMinute: startMinute,
-      endTime: endTime,
-      endMinute: endMinute,
-      practiceDetails: practiceDetails,
-    };
-    try {
-      await createRecord(submitData);
-      setDescription('');
-      setTargetDate(() => new Date().toISOString().split('T')[0]);
-      setStartTime('10時');
-      setStartMinute('00分');
-      setEndTime('11時');
-      setEndMinute('30分')
-      setPracticeDetails([{ content: '一教', tags: [] }]);
-      alert('稽古記録が作成されました');
-    } catch (error) {
-      console.error('稽古記録の作成に失敗しました。', error);
-    }
-  };
-
-  // タグの追加
   const addTag = (index: number, tag: string) => {
     const newDetails = [...practiceDetails];
     if (!newDetails[index].tags.includes(tag)) {
@@ -72,17 +73,38 @@ export default function CreateRecord() {
     }
   };
 
-  // タグの削除
   const removeTag = (detailIndex: number, tagIndex: number) => {
     const newDetails = [...practiceDetails];
     newDetails[detailIndex].tags.splice(tagIndex, 1);
     setPracticeDetails(newDetails);
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const submitData = {
+      description,
+      date: new Date(targetDate),
+      startTime,
+      startMinute,
+      endTime,
+      endMinute,
+      practiceDetails,
+    };
+    try {
+      await updateRecordById(Number(id), submitData);
+      alert('稽古記録が更新されました');
+      router.push(`/record`);
+    } catch (error) {
+      console.error('稽古記録の更新に失敗しました。', error);
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto my-10">
       <form onSubmit={handleSubmit}>
-      <div className="mb-4">
+        {/* 同じUI構造を使用 */}
+        {/* 省略: CreateRecordコンポーネントからのUIコードをここにコピーし、必要に応じて調整 */}
+        <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           日付:
           <input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
@@ -148,7 +170,7 @@ export default function CreateRecord() {
             </label>
               <div>
                 {detail.tags.map((tag, tagIndex) => (
-                  <span key={tagIndex} className="inline-flex items-center bg-gray-200 rounded-full p-2 text-sm text-gray-700 m-4">
+                  <span key={tagIndex} className="inline-flex items-center bg-gray-200 rounded-full p-2 text-sm text-gray-700 m-1">
                     {tag}
                     <button type="button" onClick={() => removeTag(index, tagIndex)} className="">
                       <XMarkIcon className="h-4 w-4" />
@@ -184,7 +206,7 @@ export default function CreateRecord() {
             <PlusIcon className="h-5 w-5" />
           </button>
         </div>
-        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">登録</button>
+        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">更新</button>
       </form>
     </div>
   );

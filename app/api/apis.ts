@@ -124,3 +124,93 @@ export async function getRecordById(id: number) {
     throw error;
   }
 }
+
+// 特定IDの練習記録を削除するAPI
+export async function deleteRecordById(id: number) {
+  try {
+    // まず、PracticeDetailに紐づくPracticeTagレコードを削除
+    await prisma.practiceTag.deleteMany({
+      where: {
+        practiceDetail: {
+          recordId: id,
+        },
+      },
+    });
+
+    // 次に、Recordに紐づくPracticeDetailレコードを削除
+    await prisma.practiceDetail.deleteMany({
+      where: {
+        recordId: id,
+      },
+    });
+
+    // 最後に、Recordレコードを削除
+    await prisma.record.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    console.log('delete record by id success');
+  } catch (error) {
+    console.error('Error deleting record by id:', error);
+    throw error;
+  }
+}
+
+// 特定IDの練習記録を修正するAPI
+export async function updateRecordById(id: number, recordData: PracticeRecord) {
+  try {
+    // まず、既存のPracticeDetailとPracticeTagを削除
+    const existingDetails = await prisma.practiceDetail.findMany({
+      where: { recordId: id },
+      include: {
+        practiceTags: true,
+      },
+    });
+
+    for (const detail of existingDetails) {
+      await prisma.practiceTag.deleteMany({
+        where: { practiceDetailId: detail.id },
+      });
+    }
+
+    await prisma.practiceDetail.deleteMany({
+      where: { recordId: id },
+    });
+
+    // 次に、新しい内容でRecordを更新
+    const updatedRecord = await prisma.record.update({
+      where: { id: id },
+      data: {
+        description: recordData.description,
+        date: recordData.date,
+        startTime: recordData.startTime,
+        startMinute: recordData.startMinute,
+        endTime: recordData.endTime,
+        endMinute: recordData.endMinute,
+        practiceDetails: {
+          create: recordData.practiceDetails.map(detail => ({
+            content: detail.content,
+            practiceTags: {
+              create: detail.tags.map(tagName => ({
+                tag: {
+                  connectOrCreate: {
+                    where: { name: tagName },
+                    create: { name: tagName },
+                  },
+                },
+              })),
+            },
+          })),
+        },
+      },
+    });
+
+    console.log('update record by id success');
+    return updatedRecord;
+  } catch (error) {
+    console.error('Error updating record by id:', error);
+    throw error;
+  }
+}
