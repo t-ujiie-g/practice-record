@@ -148,7 +148,7 @@ export default function CreateRecord() {
             </label>
               <div>
                 {detail.tags.map((tag, tagIndex) => (
-                  <span key={tagIndex} className="inline-flex items-center bg-gray-200 rounded-full p-2 text-sm text-gray-700 m-4">
+                  <span key={tagIndex} className="inline-flex items-center bg-gray-200 rounded-full p-2 text-sm text-gray-700 m-1">
                     {tag}
                     <button type="button" onClick={() => removeTag(index, tagIndex)} className="">
                       <XMarkIcon className="h-4 w-4" />
