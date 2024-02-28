@@ -16,7 +16,8 @@ const HomePage = () => {
       supabaseClient={supabase}
       appearance={{theme: ThemeSupa}}
       providers={['google']}
-      redirectTo={redirectUrl}
+      // redirectTo={redirectUrl}
+      redirectTo="https://practice-record-git-main-t-ujiies-projects.vercel.app/auth/callback"
     />
     </>
   );
