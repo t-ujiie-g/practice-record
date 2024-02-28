@@ -4,7 +4,9 @@ CREATE TABLE "Record" (
     "description" TEXT,
     "date" TIMESTAMP(3) NOT NULL,
     "startTime" TEXT,
+    "startMinute" TEXT,
     "endTime" TEXT,
+    "endMinute" TEXT,
 
     CONSTRAINT "Record_pkey" PRIMARY KEY ("id")
 );
@@ -36,6 +38,9 @@ CREATE TABLE "PracticeTag" (
 
 -- CreateIndex
 CREATE INDEX "idx_practice_detail_record_id" ON "PracticeDetail"("recordId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Tag_name_key" ON "Tag"("name");
 
 -- AddForeignKey
 ALTER TABLE "PracticeDetail" ADD CONSTRAINT "PracticeDetail_recordId_fkey" FOREIGN KEY ("recordId") REFERENCES "Record"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
