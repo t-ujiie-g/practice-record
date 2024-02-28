@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 const HomePage = () => {
+  console.log("test");
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="space-y-4">
