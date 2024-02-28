@@ -8,6 +8,7 @@ import { Database } from '@/lib/database.types'
 const HomePage = () => {
   const supabase = createClientComponentClient<Database>()
   const redirectUrl: string = process.env.NEXT_PUBLIC_APP_URL + "/auth/callback";
+  console.log(redirectUrl);
 
   return (
     <>
