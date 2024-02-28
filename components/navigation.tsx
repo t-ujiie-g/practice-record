@@ -7,9 +7,10 @@ import { supabase } from '@/utils/supabaseClient';
 
 const Navigation = ({ session }: { session: Session | null }) => {
   // ログアウト処理を行う関数
+  const redirectUrl: string = process.env.APP_URL + "/auth/signout";
   const handleLogout = async () => {
     try {
-      const response = await fetch('https://practice-record.vercel.app/auth/signout', {
+      const response = await fetch(redirectUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -7,6 +7,7 @@ import { Database } from '@/lib/database.types'
 
 const HomePage = () => {
   const supabase = createClientComponentClient<Database>()
+  const redirectUrl: string = process.env.APP_URL + "/auth/callback";
 
   return (
     <>
@@ -14,7 +15,7 @@ const HomePage = () => {
       supabaseClient={supabase}
       appearance={{theme: ThemeSupa}}
       providers={['google']}
-      redirectTo='https://practice-record.vercel.app/auth/callback'
+      redirectTo={redirectUrl}
     />
     </>
   );
