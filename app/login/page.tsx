@@ -17,7 +17,7 @@ const HomePage = () => {
       appearance={{theme: ThemeSupa}}
       providers={['google']}
       // redirectTo={redirectUrl}
-      redirectTo="https://practice-record-git-main-t-ujiies-projects.vercel.app/auth/callback"
+      redirectTo="https://practice-record.vercel.app/auth/callback"
     />
     </>
   );
