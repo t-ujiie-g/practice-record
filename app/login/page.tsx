@@ -16,8 +16,8 @@ const HomePage = () => {
       supabaseClient={supabase}
       appearance={{theme: ThemeSupa}}
       providers={['google']}
-      // redirectTo={redirectUrl}
-      redirectTo="https://practice-record.vercel.app/auth/callback"
+      redirectTo={redirectUrl}
+      // redirectTo="https://practice-record.vercel.app/auth/callback"
     />
     </>
   );
