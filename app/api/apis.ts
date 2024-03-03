@@ -6,7 +6,16 @@ import { unstable_noStore as noStore} from 'next/cache';
 import { PracticeRecord } from '@/app/api/definitions'
 import { Erica_One } from 'next/font/google';
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
+
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient();
+} else {
+  if (!global.prisma) {
+    global.prisma = new PrismaClient();
+  }
+  prisma = global.prisma;
+}
 
 // 練習記録を登録するAPI
 export async function createRecord(recordData: PracticeRecord) {
@@ -169,11 +178,11 @@ export async function updateRecordById(id: number, recordData: PracticeRecord) {
       },
     });
 
-    for (const detail of existingDetails) {
-      await prisma.practiceTag.deleteMany({
+    await Promise.all(existingDetails.map(detail => 
+      prisma.practiceTag.deleteMany({
         where: { practiceDetailId: detail.id },
-      });
-    }
+      })
+    ));
 
     await prisma.practiceDetail.deleteMany({
       where: { recordId: id },
