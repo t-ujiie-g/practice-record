@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getRecordsByMonth } from '@/app/api/apis';
 import { Record } from '@/app/definitions';
 import RecordDetailComponent from './recordDetailComponent';
 import { HiChevronLeft, HiChevronRight, HiChevronUp, HiChevronDown } from 'react-icons/hi'; // Heroiconsのインポート
@@ -23,13 +22,18 @@ const RecordsPage = () => {
     const selectedMonth = startDate.getMonth() + 1; // JavaScriptの月は0から始まるため、+1して調整
     const fetchRecords = async () => {
       try {
-        const data = await getRecordsByMonth(selectedYear, selectedMonth);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // 環境変数からAPIのURLを取得
+        const response = await fetch(`${apiUrl}/records/${selectedYear}/${selectedMonth}`);
+        if (!response.ok) {
+          throw new Error('記録の取得に失敗しました。');
+        }
+        const data = await response.json();
         setRecords(data);
       } catch (error) {
         console.error('記録の取得に失敗しました。', error);
       }
     };
-
+  
     fetchRecords();
     // 月を変更した際に詳細表示をリセット
     setSelectedRecordId(null);

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import { createRecord } from '@/app/api/apis';
 import { HOUR_TIME, MINUTE_TIME, CONTENTS_LIST } from '@/app/const';
 
 interface PracticeDetailInput {
@@ -37,36 +36,51 @@ export default function CreateRecord() {
     setPracticeDetails(currentDetails => currentDetails.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const submitData = {
       description: description,
-      date: new Date(targetDate),
+      date: targetDate,
       startTime: startTime,
       startMinute: startMinute,
       endTime: endTime,
       endMinute: endMinute,
-      practiceDetails: practiceDetails,
+      practiceDetails: practiceDetails.map(detail => ({
+        content: detail.content,
+        tags: detail.tags.map(tag => ({ name: tag })) // タグの配列をオブジェクトの配列に変換
+      })),
     };
   
-    // API呼び出しをawaitせずに実行
-    createRecord(submitData).then(() => {
-      // 成功した場合の処理（オプション）
-      console.log('稽古記録がバックグラウンドで作成されています。');
-    }).catch(error => {
-      // エラーが発生した場合の処理（オプション）
-      console.error('稽古記録の作成に失敗しました。', error);
-    });
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // 環境変数からAPIのURLを取得
+      console.log(apiUrl);
+      const response = await fetch(`${apiUrl}/records/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
   
-    // フォームのリセットとユーザーへの即時フィードバック
-    setDescription('');
-    setTargetDate(() => new Date().toISOString().split('T')[0]);
-    setStartTime('10時');
-    setStartMinute('00分');
-    setEndTime('11時');
-    setEndMinute('30分');
-    setPracticeDetails([{ content: '一教', tags: [] }]);
-    alert('稽古記録の作成を開始しました。反映までは時間がかかる場合があります。');
+      if (!response.ok) {
+        throw new Error('API call failed');
+      }
+  
+      // 成功した場合の処理
+      console.log('稽古記録がバックグラウンドで作成されています。');
+      // フォームのリセット
+      setDescription('');
+      setTargetDate(() => new Date().toISOString().split('T')[0]);
+      setStartTime('10時');
+      setStartMinute('00分');
+      setEndTime('11時');
+      setEndMinute('30分');
+      setPracticeDetails([{ content: '一教', tags: [] }]);
+      alert('稽古記録の作成を開始しました。反映までは時間がかかる場合があります。');
+    } catch (error) {
+      // エラーが発生した場合の処理
+      console.error('稽古記録の作成に失敗しました。', error);
+    }
   };
 
   // タグの追加

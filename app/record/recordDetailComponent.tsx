@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { getRecordById, deleteRecordById } from '@/app/api/apis';
 import { RecordDetail } from '@/app/definitions';
 
 const RecordDetailComponent = ({ recordId }: { recordId: number }) => {
@@ -13,24 +12,39 @@ const RecordDetailComponent = ({ recordId }: { recordId: number }) => {
   useEffect(() => {
     const fetchRecordDetail = async () => {
       try {
-        const data = await getRecordById(recordId);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // 環境変数からAPIのURLを取得
+        const response = await fetch(`${apiUrl}/records/${recordId}`);
+        if (!response.ok) {
+          throw new Error('記録の詳細の取得に失敗しました。');
+        }
+        const data = await response.json();
         setRecordDetail(data);
       } catch (error) {
         console.error('記録の詳細の取得に失敗しました。', error);
       }
     };
-
+  
     fetchRecordDetail();
-  }, [recordId]);
+  }, [recordId]); // recordIdが変更されたら再取得
 
   const handleDelete = async () => {
     if (window.confirm('この記録を削除してもよろしいですか？')) {
       try {
-        await deleteRecordById(recordId);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // 環境変数からAPIのURLを取得、または直接指定
+        const response = await fetch(`${apiUrl}/records/${recordId}`, {
+          method: 'DELETE', // HTTPメソッドをDELETEに設定
+        });
+  
+        if (!response.ok) {
+          throw new Error('記録の削除に失敗しました。');
+        }
+  
+        await response.json(); // 応答をJSONとして解析（もし応答に重要なメッセージが含まれている場合）
         alert('記録が削除されました。');
         window.location.href = '/record'; // 削除後のリダイレクト先
       } catch (error) {
         console.error('記録の削除に失敗しました。', error);
+        alert('記録の削除に失敗しました。');
       }
     }
   };
@@ -40,6 +54,8 @@ const RecordDetailComponent = ({ recordId }: { recordId: number }) => {
   };
 
   if (!recordDetail) return <div>Loading...</div>;
+  // 日付データをDateオブジェクトに変換
+  const formattedDate = new Date(recordDetail.date).toLocaleDateString();
 
   return (
     <div className="container mx-auto p-4">
@@ -54,18 +70,18 @@ const RecordDetailComponent = ({ recordId }: { recordId: number }) => {
       </div>
       <div className="bg-white shadow-md rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-2">備考: {recordDetail.description}</h2>
-        <p className="text-md mb-1">日付: {recordDetail.date.toLocaleDateString()}</p>
+        <p className="text-md mb-1">日付: {formattedDate}</p>
         <p className="text-md mb-1">開始時間: {recordDetail.startTime}:{recordDetail.startMinute}</p>
         <p className="text-md mb-4">終了時間: {recordDetail.endTime}:{recordDetail.endMinute}</p>
         <div>
           <h3 className="text-lg font-semibold mb-2">稽古詳細:</h3>
-          {recordDetail.practiceDetails.map((detail, index) => (
+          {recordDetail.practiceDetails && recordDetail.practiceDetails.map((detail, index) => (
             <div key={index} className="mb-4">
               <p className="text-md font-medium">技名: {detail.content}</p>
               <p className="text-md font-medium">タグ:</p>
               <ul className="list-disc pl-5">
-                {detail.practiceTags.map((tag, tagIndex) => (
-                  <li key={tagIndex} className="text-md">{tag.tag.name}</li>
+                {detail.tags && detail.tags.map((tag, tagIndex) => (
+                  <li key={tagIndex} className="text-md">{tag.name}</li> // ここでタグの名前を表示
                 ))}
               </ul>
             </div>

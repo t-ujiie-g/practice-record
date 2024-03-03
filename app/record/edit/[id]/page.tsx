@@ -3,12 +3,15 @@
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import { getRecordById, updateRecordById } from '@/app/api/apis';
 import { HOUR_TIME, MINUTE_TIME, CONTENTS_LIST } from '@/app/const';
 
-interface PracticeDetailInput {
+interface Tag {
+  name: string;
+}
+
+interface PracticeDetail {
   content: string;
-  tags: string[];
+  tags: Tag[];
 }
 
 export default function EditRecord() {
@@ -22,7 +25,26 @@ export default function EditRecord() {
   const [startMinute, setStartMinute] = useState('');
   const [endTime, setEndTime] = useState('');
   const [endMinute, setEndMinute] = useState('');
-  const [practiceDetails, setPracticeDetails] = useState<PracticeDetailInput[]>([]);
+  const [practiceDetails, setPracticeDetails] = useState<PracticeDetail[]>([]);
+
+  const getRecordById = async (recordId: number) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // 環境変数からAPIのURLを取得、または直接指定
+      const response = await fetch(`${apiUrl}/records/${recordId}`, {
+        method: 'GET', // HTTPメソッドをGETに設定
+      });
+  
+      if (!response.ok) {
+        throw new Error('記録の取得に失敗しました。');
+      }
+  
+      const data = await response.json(); // 応答をJSONとして解析
+      return data; // 取得した記録の詳細情報を返す
+    } catch (error) {
+      console.error('記録の取得に失敗しました。', error);
+      throw error; // エラーを再スローして、呼び出し元で処理できるようにする
+    }
+  };
 
   useEffect(() => {
     const fetchRecord = async () => {
@@ -30,14 +52,14 @@ export default function EditRecord() {
       try {
         const data = await getRecordById(Number(id));
         setDescription(data.description || '');
-        setTargetDate(data.date.toISOString().split('T')[0]); // 日付のフォーマットを調整
+        setTargetDate(data.date || ''); // 日付のフォーマットを調整
         setStartTime(data.startTime || '');
         setStartMinute(data.startMinute || '');
         setEndTime(data.endTime || '');
         setEndMinute(data.endMinute || '');
-        setPracticeDetails(data.practiceDetails.map(detail => ({
+        setPracticeDetails(data.practiceDetails.map((detail: PracticeDetail) => ({
           content: detail.content,
-          tags: detail.practiceTags.map(tag => tag.tag.name),
+          tags: detail.tags.map(tag => tag),
         })));
       } catch (error) {
         console.error('記録の取得に失敗しました。', error);
@@ -47,10 +69,10 @@ export default function EditRecord() {
     fetchRecord();
   }, [id]);
 
-  const handlePracticeDetailChange = (index: number, field: keyof PracticeDetailInput, value: string) => {
+  const handlePracticeDetailChange = (index: number, field: keyof PracticeDetail, value: string) => {
     const newDetails = [...practiceDetails];
     if (field === 'tags') {
-      newDetails[index][field] = value.split(',').map(tag => tag.trim());
+      newDetails[index][field] = value.split(',').map(tagName => ({ name: tagName.trim() }));
     } else {
       newDetails[index][field] = value;
     }
@@ -67,8 +89,8 @@ export default function EditRecord() {
 
   const addTag = (index: number, tag: string) => {
     const newDetails = [...practiceDetails];
-    if (!newDetails[index].tags.includes(tag)) {
-      newDetails[index].tags.push(tag);
+    if (!newDetails[index].tags.some(t => t.name === tag)) {
+      newDetails[index].tags.push({ name: tag });
       setPracticeDetails(newDetails);
     }
   };
@@ -79,11 +101,33 @@ export default function EditRecord() {
     setPracticeDetails(newDetails);
   };
 
+  const updateRecordById = async (recordId: number, submitData: any) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // 環境変数からAPIのURLを取得、または直接指定
+      const response = await fetch(`${apiUrl}/records/${recordId}`, {
+        method: 'PUT', // HTTPメソッドをPUTに設定
+        headers: {
+          'Content-Type': 'application/json', // コンテンツタイプをJSONに設定
+        },
+        body: JSON.stringify(submitData), // 送信データをJSON形式に変換
+      });
+  
+      if (!response.ok) {
+        throw new Error('記録の更新に失敗しました。');
+      }
+  
+      const data = await response.json(); // 応答をJSONとして解析
+      console.log('記録の更新が成功しました。', data);
+    } catch (error) {
+      console.error('記録の更新に失敗しました。', error);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const submitData = {
       description,
-      date: new Date(targetDate),
+      date: targetDate,
       startTime,
       startMinute,
       endTime,
@@ -177,7 +221,7 @@ export default function EditRecord() {
               <div>
                 {detail.tags.map((tag, tagIndex) => (
                   <span key={tagIndex} className="inline-flex items-center bg-gray-200 rounded-full p-2 text-sm text-gray-700 m-1">
-                    {tag}
+                    {tag.name}
                     <button type="button" onClick={() => removeTag(index, tagIndex)} className="">
                       <XMarkIcon className="h-4 w-4" />
                     </button>
