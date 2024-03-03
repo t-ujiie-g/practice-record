@@ -10,26 +10,18 @@ export type Record = {
     id: number;
     recordId: number;
     content: string;
-    practiceTags: {
-      practiceDetailId: number;
-      tagId: number;
-      tag: { // この部分を追加
-        id: number;
-        name: string;
-      }
+    tags: { // 修正: practiceTags から tags へ
+      id: number; // tag の id
+      name: string; // tag の name
     }[];
   }[];
 };
 
 export type RecordDetail = {
   practiceDetails: ({
-    practiceTags: {
-      practiceDetailId: number;
-      tagId: number;
-      tag: { // この部分を追加
-        id: number;
-        name: string;
-      }
+    tags: { // 修正: practiceTags から tags へ
+      id: number; // tag の id
+      name: string; // tag の name
     }[];
   } & {
     id: number;
