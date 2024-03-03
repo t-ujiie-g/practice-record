@@ -79,7 +79,7 @@ export default function EditRecord() {
     setPracticeDetails(newDetails);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const submitData = {
       description,
@@ -90,13 +90,19 @@ export default function EditRecord() {
       endMinute,
       practiceDetails,
     };
-    try {
-      await updateRecordById(Number(id), submitData);
-      alert('稽古記録が更新されました');
-      router.push(`/record`);
-    } catch (error) {
+  
+    // API呼び出しをawaitせずに実行
+    updateRecordById(Number(id), submitData).then(() => {
+      // 成功した場合の処理（オプション）
+      console.log('稽古記録の更新がバックグラウンドで進行中です。');
+    }).catch(error => {
+      // エラーが発生した場合の処理（オプション）
       console.error('稽古記録の更新に失敗しました。', error);
-    }
+    });
+  
+    // ユーザーへの即時フィードバックとページ遷移
+    alert('稽古記録の更新を開始しました。反映には時間がかかる場合があります。');
+    router.push(`/record`);
   };
 
   return (
