@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { Database } from '@/lib/database.types'
 import { HOUR_TIME, MINUTE_TIME, CONTENTS_LIST } from '@/app/const';
 
 interface PracticeDetailInput {
@@ -10,6 +12,8 @@ interface PracticeDetailInput {
 }
 
 export default function CreateRecord() {
+  const supabase = createClientComponentClient<Database>()
+
   const [description, setDescription] = useState('');
   const [targetDate, setTargetDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState('10時');
@@ -38,6 +42,15 @@ export default function CreateRecord() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // 現在ログインしているユーザーの情報を取得
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.error('ユーザーがログインしていません。');
+      return; // または適切なエラーハンドリング
+    }
+
     const submitData = {
       description: description,
       date: targetDate,
@@ -45,6 +58,7 @@ export default function CreateRecord() {
       startMinute: startMinute,
       endTime: endTime,
       endMinute: endMinute,
+      userId: user.id,
       practiceDetails: practiceDetails.map(detail => ({
         content: detail.content,
         tags: detail.tags.map(tag => ({ name: tag })) // タグの配列をオブジェクトの配列に変換

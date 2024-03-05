@@ -2,18 +2,29 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { Database } from '@/lib/database.types'
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { RecordDetail } from '@/app/definitions';
 
 const RecordDetailComponent = ({ recordId }: { recordId: number }) => {
+  const supabase = createClientComponentClient<Database>()
+
   const [recordDetail, setRecordDetail] = useState<RecordDetail | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const fetchRecordDetail = async () => {
       try {
+        // 現在ログインしているユーザーの情報を取得
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          console.error('ユーザーがログインしていません。');
+          return; // または適切なエラーハンドリング
+        }
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // 環境変数からAPIのURLを取得
-        const response = await fetch(`${apiUrl}/records/${recordId}`);
+        const response = await fetch(`${apiUrl}/records/${recordId}/?userId=${user.id}`);
         if (!response.ok) {
           throw new Error('記録の詳細の取得に失敗しました。');
         }
@@ -30,8 +41,16 @@ const RecordDetailComponent = ({ recordId }: { recordId: number }) => {
   const handleDelete = async () => {
     if (window.confirm('この記録を削除してもよろしいですか？')) {
       try {
+        // 現在ログインしているユーザーの情報を取得
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          console.error('ユーザーがログインしていません。');
+          return; // または適切なエラーハンドリング
+        }
+
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // 環境変数からAPIのURLを取得、または直接指定
-        const response = await fetch(`${apiUrl}/records/${recordId}`, {
+        const response = await fetch(`${apiUrl}/records/${recordId}/?userId=${user.id}`, {
           method: 'DELETE', // HTTPメソッドをDELETEに設定
         });
   

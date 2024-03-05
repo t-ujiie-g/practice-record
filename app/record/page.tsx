@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Record } from '@/app/definitions';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { Database } from '@/lib/database.types'
 import RecordDetailComponent from './recordDetailComponent';
 import { HiChevronLeft, HiChevronRight, HiChevronUp, HiChevronDown } from 'react-icons/hi'; // Heroiconsのインポート
 import DatePicker from 'react-datepicker';
@@ -12,6 +14,8 @@ import { ja } from 'date-fns/locale/ja';
 registerLocale('ja', ja); // 日本語のロケールを登録
 
 const RecordsPage = () => {
+  const supabase = createClientComponentClient<Database>()
+
   const [records, setRecords] = useState<Record[]>([]);
   const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null);
   const [startDate, setStartDate] = useState(new Date());
@@ -22,8 +26,15 @@ const RecordsPage = () => {
     const selectedMonth = startDate.getMonth() + 1; // JavaScriptの月は0から始まるため、+1して調整
     const fetchRecords = async () => {
       try {
+        // 現在ログインしているユーザーの情報を取得
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          console.error('ユーザーがログインしていません。');
+          return; // または適切なエラーハンドリング
+        }
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // 環境変数からAPIのURLを取得
-        const response = await fetch(`${apiUrl}/records/${selectedYear}/${selectedMonth}`);
+        const response = await fetch(`${apiUrl}/records/${selectedYear}/${selectedMonth}/?userId=${user.id}`);
         if (!response.ok) {
           throw new Error('記録の取得に失敗しました。');
         }
