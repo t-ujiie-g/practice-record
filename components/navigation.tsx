@@ -53,6 +53,11 @@ const Navigation = ({ session }: { session: Session | null }) => {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/analysis" className="hover:text-blue-200">
+                    分析
+                  </Link>
+                </li>
+                <li>
                   <button onClick={handleLogout} className="hover:text-blue-200">
                     ログアウト
                   </button>
