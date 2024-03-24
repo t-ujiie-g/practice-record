@@ -51,7 +51,7 @@ const RecordsPage = () => {
   }, [startDate]); // startDateが変更されたら再取得
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto pt-5">
       <div className="flex flex-col lg:flex-row items-start">
         {/* 一覧画面 */}
         {isListVisible && (

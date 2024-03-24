@@ -11,7 +11,7 @@ const HomePage = () => {
   console.log(redirectUrl);
 
   return (
-    <>
+    <div className='pt-5'>
     <Auth
       supabaseClient={supabase}
       appearance={{theme: ThemeSupa}}
@@ -19,7 +19,7 @@ const HomePage = () => {
       redirectTo={redirectUrl}
       // redirectTo="https://practice-record.vercel.app/auth/callback"
     />
-    </>
+    </div>
   );
 };
 
