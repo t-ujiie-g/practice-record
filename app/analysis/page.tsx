@@ -5,19 +5,20 @@ import AnalysisChart from '@/components/analysisChart';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { CONTENTS_LIST } from '@/app/const';
-import { XMarkIcon } from '@heroicons/react/24/solid'; // XMarkIconのインポートが必要です
+import { PlusIcon, XMarkIcon } from '@heroicons/react/24/solid'; // XMarkIconのインポートが必要です
 import { ja } from 'date-fns/locale';
 import { format, utcToZonedTime } from 'date-fns-tz';
 
 const AnalysisPage: React.FC = () => {
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
-    const [content, setContent] = useState<string>('');
+    const [contents, setContents] = useState<string[]>(['']); // 技名を複数管理するため配列に変更
     const [tags, setTags] = useState<string[]>([]); // タグの状態を文字列の配列で管理
+    const [description, setDescription] = useState<string>('');
   
-    const handleContentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setContent(e.target.value);
-    };
+    // const handleContentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    //   setContent(e.target.value);
+    // };
   
   // タグの追加
   const addTag = (tag: string) => {
@@ -55,6 +56,26 @@ const AnalysisPage: React.FC = () => {
     setEndDate(dateString);
   };
 
+  // descriptionの入力変更をハンドルする関数
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDescription(e.target.value);
+  };
+
+    // 技名の入力欄を追加する関数
+    const addContentInput = () => {
+      setContents(prevContent => [...prevContent, '']);
+  };
+
+  // 特定の技名の入力欄を削除する関数
+  const removeContentInput = (index: number) => {
+      setContents(prevContent => prevContent.filter((_, i) => i !== index));
+  };
+
+  // 技名の変更をハンドルする関数
+  const handleContentChange = (index: number, value: string) => {
+      setContents(prevContent => prevContent.map((content, i) => i === index ? value : content));
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">稽古記録分析</h1>
@@ -83,18 +104,41 @@ const AnalysisPage: React.FC = () => {
         </div>
       </div>
       <div className="mb-4">
-        <label htmlFor="content" className="block text-sm font-medium text-gray-700">内容</label>
-        <select
-          id="content"
-          value={content}
-          onChange={handleContentChange} // 変更: handleContentChangeを更新
-          className="form-select px-4 py-2 border rounded w-full"
-        >
-          <option value="">選択してください</option>
-          {CONTENTS_LIST.map((item) => (
-            <option key={item} value={item}>{item}</option>
-          ))}
-        </select>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700">備考</label>
+        <input
+            id="description"
+            type="text"
+            value={description}
+            onChange={handleDescriptionChange}
+            className="form-input px-4 py-2 border rounded w-full"
+            placeholder="備考を入力..."
+        />
+      </div>
+      <div className="mb-4">
+        <label htmlFor="content" className="block text-sm font-medium text-gray-700">技名</label>
+        {contents.map((contentItem, index) => (
+                <div key={index} className="mb-4 flex items-center">
+                    <select
+                        value={contentItem}
+                        onChange={(e) => handleContentChange(index, e.target.value)}
+                        className="form-select px-4 py-2 border rounded w-full"
+                    >
+                        <option value="">選択してください</option>
+                        {CONTENTS_LIST.map((item) => (
+                            <option key={item} value={item}>{item}</option>
+                        ))}
+                    </select>
+                    {index === 0 ? (
+                        <button type="button" onClick={addContentInput} className="ml-2">
+                            <PlusIcon className="h-5 w-5 text-blue-700" />
+                        </button>
+                    ) : (
+                        <button type="button" onClick={() => removeContentInput(index)} className="ml-2">
+                            <XMarkIcon className="h-5 w-5 text-red-500" />
+                        </button>
+                    )}
+                </div>
+            ))}
       </div>
       <div className="mb-4">
         {tags.map((tag, index) => (
@@ -115,7 +159,8 @@ const AnalysisPage: React.FC = () => {
       <AnalysisChart
         startDate={startDate}
         endDate={endDate}
-        content={content}
+        description={description}
+        contents={contents}
         tagNames={tags.filter(tag => tag.trim() !== '')}
       />
     </div>

@@ -28,7 +28,8 @@ interface ChartData {
 interface AnalysisChartProps {
   startDate?: string;
   endDate?: string;
-  content?: string;
+  description?: string;
+  contents?: string[];
   tagNames?: string[];
 }
 
@@ -38,7 +39,7 @@ interface TechniqueData {
   };
 }
 
-const AnalysisChart: React.FC<AnalysisChartProps> = ({ startDate, endDate, content, tagNames }) => {
+const AnalysisChart: React.FC<AnalysisChartProps> = ({ startDate, endDate, description, contents, tagNames }) => {
   const [chartData, setChartData] = useState<ChartData>({ labels: [], datasets: [] });
   const [options, setOptions] = useState({ scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { display: true } } });
 
@@ -65,7 +66,14 @@ const AnalysisChart: React.FC<AnalysisChartProps> = ({ startDate, endDate, conte
     const queryParams = [];
     if (startDate) queryParams.push(`start_date=${encodeURIComponent(startDate)}`);
     if (endDate) queryParams.push(`end_date=${encodeURIComponent(endDate)}`);
-    if (content) queryParams.push(`contents=${encodeURIComponent(content)}`);
+    if (description) queryParams.push(`description=${encodeURIComponent(description)}`);
+    // if (content) queryParams.push(`contents=${encodeURIComponent(content)}`);
+    if (contents && contents.length > 0 && !contents.every(content => content === '')) {
+      contents.forEach(content => {
+        queryParams.push(`contents=${encodeURIComponent(content)}`);
+      });
+    }
+
     if (tagNames && tagNames.length > 0) {
       tagNames.forEach(tagName => {
         queryParams.push(`tag_names=${encodeURIComponent(tagName)}`);
@@ -133,7 +141,7 @@ const AnalysisChart: React.FC<AnalysisChartProps> = ({ startDate, endDate, conte
 
   useEffect(() => {
     fetchAnalysisData();
-  }, [startDate, endDate, content, tagNames]);
+  }, [startDate, endDate, contents, tagNames]);
 
   return <Bar data={chartData} options={options} />;
 };
