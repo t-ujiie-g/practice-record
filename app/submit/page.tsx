@@ -5,17 +5,25 @@ import { PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Database } from '@/lib/database.types'
 import { HOUR_TIME, MINUTE_TIME, CONTENTS_LIST } from '@/app/const';
+import { utcToZonedTime, format } from 'date-fns-tz';
 
 interface PracticeDetailInput {
   content: string;
   tags: string[];
 }
 
+// 日本時間での現在日付を取得する関数を定義
+const getJSTDate = () => {
+  const now = new Date();
+  const jstDate = utcToZonedTime(now, 'Asia/Tokyo');
+  return format(jstDate, 'yyyy-MM-dd', { timeZone: 'Asia/Tokyo' });
+};
+
 export default function CreateRecord() {
   const supabase = createClientComponentClient<Database>()
 
   const [description, setDescription] = useState('');
-  const [targetDate, setTargetDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [targetDate, setTargetDate] = useState(getJSTDate);
   const [startTime, setStartTime] = useState('10時');
   const [startMinute, setStartMinute] = useState('00分');
   const [endTime, setEndTime] = useState('11時');
@@ -84,7 +92,7 @@ export default function CreateRecord() {
       console.log('稽古記録がバックグラウンドで作成されています。');
       // フォームのリセット
       setDescription('');
-      setTargetDate(() => new Date().toISOString().split('T')[0]);
+      setTargetDate(getJSTDate);
       setStartTime('10時');
       setStartMinute('00分');
       setEndTime('11時');
