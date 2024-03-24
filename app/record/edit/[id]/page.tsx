@@ -165,7 +165,7 @@ export default function EditRecord() {
     });
   
     // ユーザーへの即時フィードバックとページ遷移
-    alert('稽古記録の更新を開始しました。反映には時間がかかる場合があります。');
+    alert('稽古記録の更新しました。');
     router.push(`/record`);
   };
 

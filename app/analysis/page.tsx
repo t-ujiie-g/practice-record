@@ -6,10 +6,12 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { CONTENTS_LIST } from '@/app/const';
 import { XMarkIcon } from '@heroicons/react/24/solid'; // XMarkIconのインポートが必要です
+import { ja } from 'date-fns/locale';
+import { format, utcToZonedTime } from 'date-fns-tz';
 
 const AnalysisPage: React.FC = () => {
-    const [startDate, setStartDate] = useState<Date | null>(null);
-    const [endDate, setEndDate] = useState<Date | null>(null);
+    const [startDate, setStartDate] = useState<string>('');
+    const [endDate, setEndDate] = useState<string>('');
     const [content, setContent] = useState<string>('');
     const [tags, setTags] = useState<string[]>([]); // タグの状態を文字列の配列で管理
   
@@ -37,6 +39,22 @@ const AnalysisPage: React.FC = () => {
     setTags(prevTags => prevTags.filter((_, i) => i !== index));
   };
 
+  const handleStartDateChange = (date: Date) => {
+    // 日本のタイムゾーンを考慮してDateオブジェクトを変換
+    const zonedDate = utcToZonedTime(date, 'Asia/Tokyo');
+    // 'yyyy-MM-dd'形式の文字列に変換
+    const dateString = format(zonedDate, 'yyyy-MM-dd', { timeZone: 'Asia/Tokyo' });
+    setStartDate(dateString);
+  };
+  
+  const handleEndDateChange = (date: Date) => {
+    // 日本のタイムゾーンを考慮してDateオブジェクトを変換
+    const zonedDate = utcToZonedTime(date, 'Asia/Tokyo');
+    // 'yyyy-MM-dd'形式の文字列に変換
+    const dateString = format(zonedDate, 'yyyy-MM-dd', { timeZone: 'Asia/Tokyo' });
+    setEndDate(dateString);
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">稽古記録分析</h1>
@@ -46,8 +64,10 @@ const AnalysisPage: React.FC = () => {
           <DatePicker
             id="startDate"
             className="form-input px-4 py-2 border rounded"
-            selected={startDate}
-            onChange={(date: Date) => setStartDate(date)}
+            selected={startDate ? new Date(startDate) : null} // 文字列をDateオブジェクトに変換
+            onChange={(date: Date) => handleStartDateChange(date)}
+            locale={ja}
+            dateFormat="yyyy-MM-dd"
           />
         </div>
         <div>
@@ -55,8 +75,10 @@ const AnalysisPage: React.FC = () => {
           <DatePicker
             id="endDate"
             className="form-input px-4 py-2 border rounded"
-            selected={endDate}
-            onChange={(date: Date) => setEndDate(date)}
+            selected={endDate ? new Date(endDate) : null} // 文字列をDateオブジェクトに変換
+            onChange={(date: Date) => handleEndDateChange(date)}
+            locale={ja}
+            dateFormat="yyyy-MM-dd"
           />
         </div>
       </div>
@@ -91,8 +113,8 @@ const AnalysisPage: React.FC = () => {
         />
       </div>
       <AnalysisChart
-        startDate={startDate ? startDate.toISOString().split('T')[0] : undefined}
-        endDate={endDate ? endDate.toISOString().split('T')[0] : undefined}
+        startDate={startDate}
+        endDate={endDate}
         content={content}
         tagNames={tags.filter(tag => tag.trim() !== '')}
       />

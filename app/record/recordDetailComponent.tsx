@@ -78,7 +78,7 @@ const RecordDetailComponent = ({ recordId }: { recordId: number }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold my-4 text-gray-800">稽古記録詳細</h1>
+      <h1 className="text-xl font-bold my-4 text-gray-800">稽古記録詳細</h1>
       <div className="flex justify-end space-x-2">
         <button onClick={handleEdit} className="p-2 text-blue-500 hover:text-blue-700">
           <PencilIcon className="h-6 w-6" />
@@ -90,8 +90,8 @@ const RecordDetailComponent = ({ recordId }: { recordId: number }) => {
       <div className="bg-white shadow-md rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-2">備考: {recordDetail.description}</h2>
         <p className="text-md mb-1">日付: {formattedDate}</p>
-        <p className="text-md mb-1">開始時間: {recordDetail.startTime}:{recordDetail.startMinute}</p>
-        <p className="text-md mb-4">終了時間: {recordDetail.endTime}:{recordDetail.endMinute}</p>
+        <p className="text-md mb-1">開始時間: {recordDetail.startTime}{recordDetail.startMinute}</p>
+        <p className="text-md mb-4">終了時間: {recordDetail.endTime}{recordDetail.endMinute}</p>
         <div>
           <h3 className="text-lg font-semibold mb-2">稽古詳細:</h3>
           {recordDetail.practiceDetails && recordDetail.practiceDetails.map((detail, index) => (

@@ -90,7 +90,7 @@ export default function CreateRecord() {
       setEndTime('11時');
       setEndMinute('30分');
       setPracticeDetails([{ content: '一教', tags: [] }]);
-      alert('稽古記録の作成を開始しました。反映までは時間がかかる場合があります。');
+      alert('稽古記録の作成しました。');
     } catch (error) {
       // エラーが発生した場合の処理
       console.error('稽古記録の作成に失敗しました。', error);

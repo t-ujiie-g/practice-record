@@ -9,7 +9,7 @@ import { HiChevronLeft, HiChevronRight, HiChevronUp, HiChevronDown } from 'react
 import DatePicker from 'react-datepicker';
 import { registerLocale } from "react-datepicker";
 import 'react-datepicker/dist/react-datepicker.css';
-import { ja } from 'date-fns/locale/ja'; 
+import { ja } from 'date-fns/locale'; 
 
 registerLocale('ja', ja); // 日本語のロケールを登録
 
@@ -56,7 +56,7 @@ const RecordsPage = () => {
         {/* 一覧画面 */}
         {isListVisible && (
           <div className="w-full lg:w-1/4 lg:mr-4">
-          <h1 className="text-2xl font-bold my-4">稽古記録一覧</h1>
+          <h1 className="text-xl font-bold my-4">稽古記録一覧</h1>
           <div className="flex justify-between items-center my-4">
             <div className="flex items-center">
               <button
@@ -113,12 +113,12 @@ const RecordsPage = () => {
       >
         {isListVisible ? (
           <>
-            <HiChevronDown className="h-10 w-10" />
+            <HiChevronUp className="h-10 w-10" />
             <span>一覧を閉じる</span>
           </>
         ) : (
           <>
-            <HiChevronUp className="h-10 w-10" />
+            <HiChevronDown className="h-10 w-10" />
             <span>一覧を表示</span>
           </>
         )}
