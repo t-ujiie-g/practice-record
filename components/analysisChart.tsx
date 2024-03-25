@@ -61,7 +61,7 @@ const AnalysisChart: React.FC<AnalysisChartProps> = ({ startDate, endDate, descr
 
   const fetchAnalysisData = async () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // 環境変数からAPIのURLを取得
-    let url = `${apiUrl}/analysis?`;
+    let url = `${apiUrl}/analysis_tag?`;
 
     const queryParams = [];
     if (startDate) queryParams.push(`start_date=${encodeURIComponent(startDate)}`);
