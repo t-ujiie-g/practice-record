@@ -1,24 +1,26 @@
 'use client';
 
 import React, { useState, KeyboardEvent } from 'react';
-import AnalysisChart from '@/components/analysisChart';
+import TagAnalysisChart from '@/components/tagAnalysisChart';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { CONTENTS_LIST } from '@/app/const';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/solid'; // XMarkIconのインポートが必要です
 import { ja } from 'date-fns/locale';
+import { startOfMonth } from 'date-fns';
 import { format, utcToZonedTime } from 'date-fns-tz';
+import AnalysisDetailTable from '@/components/detailAnalysisTable';
+import TermAnalysisChart from '@/components/termAnalysisChart';
 
 const AnalysisPage: React.FC = () => {
-    const [startDate, setStartDate] = useState<string>('');
+  const firstDayOfCurrentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+
+    const [startDate, setStartDate] = useState<string>(firstDayOfCurrentMonth);
     const [endDate, setEndDate] = useState<string>('');
     const [contents, setContents] = useState<string[]>(['']); // 技名を複数管理するため配列に変更
     const [tags, setTags] = useState<string[]>([]); // タグの状態を文字列の配列で管理
     const [description, setDescription] = useState<string>('');
-  
-    // const handleContentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    //   setContent(e.target.value);
-    // };
+    const [selectedTab, setSelectedTab] = useState<'detail' | 'chart' | 'term'>('detail');
   
   // タグの追加
   const addTag = (tag: string) => {
@@ -75,6 +77,11 @@ const AnalysisPage: React.FC = () => {
   const handleContentChange = (index: number, value: string) => {
       setContents(prevContent => prevContent.map((content, i) => i === index ? value : content));
   };
+
+  // タブの切り替えをハンドルする関数
+  const handleTabChange = (tab: 'detail' | 'chart' | 'term') => {
+    setSelectedTab(tab);
+};
 
   return (
     <div className="pt-5">
@@ -156,13 +163,52 @@ const AnalysisPage: React.FC = () => {
           placeholder="タグを追加..."
         />
       </div>
-      <AnalysisChart
-        startDate={startDate}
-        endDate={endDate}
-        description={description}
-        contents={contents}
-        tagNames={tags.filter(tag => tag.trim() !== '')}
-      />
+      <div className="mb-4">
+                <button
+                    className={`px-4 py-2 ${selectedTab === 'detail' ? 'bg-blue-500 text-white' : 'bg-transparent'}`}
+                    onClick={() => handleTabChange('detail')}
+                >
+                    稽古検索
+                </button>
+                <button
+                    className={`px-4 py-2 ${selectedTab === 'term' ? 'bg-blue-500 text-white' : 'bg-transparent'}`}
+                    onClick={() => handleTabChange('term')}
+                >
+                    期間分析
+                </button>
+                <button
+                    className={`px-4 py-2 ${selectedTab === 'chart' ? 'bg-blue-500 text-white' : 'bg-transparent'}`}
+                    onClick={() => handleTabChange('chart')}
+                >
+                    タグ分析
+                </button>
+            </div>
+            {/* 条件に基づいてコンポーネントを切り替え */}
+            {selectedTab === 'detail' ? (
+                <AnalysisDetailTable
+                    startDate={startDate}
+                    endDate={endDate}
+                    description={description}
+                    contents={contents}
+                    tagNames={tags.filter(tag => tag.trim() !== '')}
+                />
+            ) : selectedTab === 'term' ? (
+                <TermAnalysisChart
+                    startDate={startDate}
+                    endDate={endDate}
+                    description={description}
+                    contents={contents}
+                    tagNames={tags.filter(tag => tag.trim() !== '')}
+                />
+            ) : (
+                <TagAnalysisChart
+                    startDate={startDate}
+                    endDate={endDate}
+                    description={description}
+                    contents={contents}
+                    tagNames={tags.filter(tag => tag.trim() !== '')}
+                />
+            )}
     </div>
   );
 };

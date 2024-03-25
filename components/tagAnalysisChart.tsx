@@ -39,7 +39,7 @@ interface TechniqueData {
   };
 }
 
-const AnalysisChart: React.FC<AnalysisChartProps> = ({ startDate, endDate, description, contents, tagNames }) => {
+const TagAnalysisChart: React.FC<AnalysisChartProps> = ({ startDate, endDate, description, contents, tagNames }) => {
   const [chartData, setChartData] = useState<ChartData>({ labels: [], datasets: [] });
   const [options, setOptions] = useState({ scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { display: true } } });
 
@@ -146,4 +146,4 @@ const AnalysisChart: React.FC<AnalysisChartProps> = ({ startDate, endDate, descr
   return <Bar data={chartData} options={options} />;
 };
 
-export default AnalysisChart;
+export default TagAnalysisChart;
