@@ -20,7 +20,7 @@ const AnalysisPage: React.FC = () => {
     const [contents, setContents] = useState<string[]>(['']); // 技名を複数管理するため配列に変更
     const [tags, setTags] = useState<string[]>([]); // タグの状態を文字列の配列で管理
     const [description, setDescription] = useState<string>('');
-    const [selectedTab, setSelectedTab] = useState<'detail' | 'chart' | 'term'>('detail');
+    const [selectedTab, setSelectedTab] = useState<'detail' | 'chart' | 'term'>('term');
   
   // タグの追加
   const addTag = (tag: string) => {
@@ -165,16 +165,16 @@ const AnalysisPage: React.FC = () => {
       </div>
       <div className="mb-4">
                 <button
-                    className={`px-4 py-2 ${selectedTab === 'detail' ? 'bg-blue-500 text-white' : 'bg-transparent'}`}
-                    onClick={() => handleTabChange('detail')}
-                >
-                    稽古検索
-                </button>
-                <button
                     className={`px-4 py-2 ${selectedTab === 'term' ? 'bg-blue-500 text-white' : 'bg-transparent'}`}
                     onClick={() => handleTabChange('term')}
                 >
                     期間分析
+                </button>
+                <button
+                    className={`px-4 py-2 ${selectedTab === 'detail' ? 'bg-blue-500 text-white' : 'bg-transparent'}`}
+                    onClick={() => handleTabChange('detail')}
+                >
+                    稽古検索
                 </button>
                 <button
                     className={`px-4 py-2 ${selectedTab === 'chart' ? 'bg-blue-500 text-white' : 'bg-transparent'}`}
@@ -184,16 +184,16 @@ const AnalysisPage: React.FC = () => {
                 </button>
             </div>
             {/* 条件に基づいてコンポーネントを切り替え */}
-            {selectedTab === 'detail' ? (
-                <AnalysisDetailTable
-                    startDate={startDate}
-                    endDate={endDate}
-                    description={description}
-                    contents={contents}
-                    tagNames={tags.filter(tag => tag.trim() !== '')}
-                />
-            ) : selectedTab === 'term' ? (
+            {selectedTab === 'term' ? (
                 <TermAnalysisChart
+                startDate={startDate}
+                endDate={endDate}
+                description={description}
+                contents={contents}
+                tagNames={tags.filter(tag => tag.trim() !== '')}
+            />
+            ) : selectedTab === 'detail' ? (
+                <AnalysisDetailTable
                     startDate={startDate}
                     endDate={endDate}
                     description={description}
