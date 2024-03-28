@@ -24,6 +24,7 @@ const AnalysisDetailTable: React.FC<AnalysisDetailTableProps> = ({ startDate, en
   const [analysisDetails, setAnalysisDetails] = useState<AnalysisDetail[]>([]);
   const [sortColumn, setSortColumn] = useState<string>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [tagFilterType, setTagFilterType] = useState<'and' | 'or'>('and');
 
   useEffect(() => {
     const fetchAnalysisDetails = async () => {
@@ -46,6 +47,8 @@ const AnalysisDetailTable: React.FC<AnalysisDetailTableProps> = ({ startDate, en
           queryParams.push(`tag_names=${encodeURIComponent(tagName)}`);
         });
       }
+
+      if (tagFilterType) queryParams.push(`condition=${encodeURIComponent(tagFilterType)}`);
   
       const queryString = queryParams.join('&');
       const response = await fetch(`${url}${queryString}`);
@@ -55,7 +58,7 @@ const AnalysisDetailTable: React.FC<AnalysisDetailTableProps> = ({ startDate, en
     };
 
     fetchAnalysisDetails();
-  }, [startDate, endDate, contents, tagNames]);
+  }, [startDate, endDate, contents, tagNames, tagFilterType]);
 
   const sortData = (column: SortableColumn) => {
     const newDirection = sortColumn === column && sortDirection === 'asc' ? 'desc' : 'asc';
@@ -72,8 +75,35 @@ const AnalysisDetailTable: React.FC<AnalysisDetailTableProps> = ({ startDate, en
     });
   };
 
+  const handleTagFilterTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTagFilterType(event.target.value as 'and' | 'or');
+  };
+
   return (
     <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
+      <div className="flex items-center space-x-4 mb-4">
+        <label className="text-sm font-medium text-gray-700">タグフィルター:</label>
+        <div className="flex items-center">
+          <input
+            type="radio"
+            name="tagFilterType"
+            value="and"
+            checked={tagFilterType === 'and'}
+            onChange={handleTagFilterTypeChange}
+            className="mr-2"
+          />
+          <label htmlFor="tagFilterTypeAnd" className="mr-4">AND</label>
+          <input
+            type="radio"
+            name="tagFilterType"
+            value="or"
+            checked={tagFilterType === 'or'}
+            onChange={handleTagFilterTypeChange}
+            className="mr-2"
+          />
+          <label htmlFor="tagFilterTypeOr">OR</label>
+        </div>
+      </div>
       <div style={{ maxHeight: '20rem', overflowY: 'auto' }}>
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">

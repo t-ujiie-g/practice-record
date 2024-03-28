@@ -32,6 +32,7 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
   const [analysisDetails, setAnalysisDetails] = useState<AnalysisDetail[]>([]);
   const [trainingCounts, setTrainingCounts] = useState<TrainingCountData[]>([]);
   const [aggregateType, setAggregateType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [tagFilterType, setTagFilterType] = useState<'and' | 'or'>('and');
 
   useEffect(() => {
     const fetchAnalysisDetails = async () => {
@@ -54,6 +55,8 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
           queryParams.push(`tag_names=${encodeURIComponent(tagName)}`);
         });
       }
+
+      if (tagFilterType) queryParams.push(`condition=${encodeURIComponent(tagFilterType)}`);
   
       const queryString = queryParams.join('&');
       const response = await fetch(`${url}${queryString}`);
@@ -63,7 +66,7 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
     };
 
     fetchAnalysisDetails();
-  }, [startDate, endDate, contents, tagNames]);
+  }, [startDate, endDate, contents, tagNames, tagFilterType]);
 
   useEffect(() => {
     const aggregateData = () => {
@@ -120,6 +123,10 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
     setAggregateType(event.target.value as 'daily' | 'weekly' | 'monthly');
   };
 
+  const handleTagFilterTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTagFilterType(event.target.value as 'and' | 'or');
+  };
+
   return (
     <>
       <div className="flex items-center space-x-4 mb-4">
@@ -135,9 +142,32 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
           <option value="monthly">月別</option>
         </select>
       </div>
+      <div className="flex items-center space-x-4 mb-4">
+        <label className="text-sm font-medium text-gray-700">タグフィルター:</label>
+        <div className="flex items-center">
+          <input
+            type="radio"
+            name="tagFilterType"
+            value="and"
+            checked={tagFilterType === 'and'}
+            onChange={handleTagFilterTypeChange}
+            className="mr-2"
+          />
+          <label htmlFor="tagFilterTypeAnd" className="mr-4">AND</label>
+          <input
+            type="radio"
+            name="tagFilterType"
+            value="or"
+            checked={tagFilterType === 'or'}
+            onChange={handleTagFilterTypeChange}
+            className="mr-2"
+          />
+          <label htmlFor="tagFilterTypeOr">OR</label>
+        </div>
+      </div>
       <Bar data={data} />
     </>
   );
-};
+}
 
 export default TermAnalysisChart;
