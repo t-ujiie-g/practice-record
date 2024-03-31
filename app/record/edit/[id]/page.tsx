@@ -90,7 +90,7 @@ export default function EditRecord() {
   };
 
   const addPracticeDetail = () => {
-    setPracticeDetails([...practiceDetails, { content: '', tags: [] }]);
+    setPracticeDetails([...practiceDetails, { content: '一教', tags: [] }]);
   };
 
   const removePracticeDetail = (index: number) => {

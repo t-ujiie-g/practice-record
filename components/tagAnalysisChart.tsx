@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { techniqueColors } from '@/app/const';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -84,25 +85,6 @@ const TagAnalysisChart: React.FC<AnalysisChartProps> = ({ startDate, endDate, de
     const response = await fetch(`${url}${queryString}`);
     const data: AnalysisData = await response.json();
 
-    // 新しいデータ処理ロジック
-    const techniqueColors: { [techniqueName: string]: string } = {
-      "一教": "#3498db", // 明るい青
-      "二教": "#2ecc71", // 明るい緑
-      "三教": "#9b59b6", // 明るい紫
-      "四教": "#e74c3c", // 明るい赤
-      "四方投げ": "#f1c40f", // 明るい黄色
-      "入り身投げ": "#1abc9c", // シアン
-      "小手返し": "#34495e", // 濃い青
-      "回転投げ": "#d35400", // 明るいオレンジ
-      "腰投げ": "#7f8c8d", // グレー
-      "呼吸投げ": "#95a5a6", // 明るいグレー
-      "隅落とし": "#2980b9", // 濃い青
-      "天地投げ": "#8e44ad", // 濃い紫
-      "呼吸法": "#27ae60", // 濃い緑
-      "多人数": "#16a085", // 濃いシアン
-      "武器技": "#c0392b", // 濃い赤
-      "その他": "#bdc3c7", // シルバー
-    };
     const techniqueData: TechniqueData = {}; // 型定義を使用
     data.forEach(practiceTypeObj => {
       Object.entries(practiceTypeObj).forEach(([practiceTypeName, techniques]) => {

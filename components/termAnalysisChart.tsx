@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { startOfWeek, format, addDays } from 'date-fns';
+import { techniqueColors } from '@/app/const';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -29,10 +30,36 @@ interface TermAnalysisChartProps {
     tagFilterType?: string;
   }
 
+  interface ChartData {
+    labels: string[]; // tagNameを格納
+    datasets: {
+      label: string; // techniqueの名前
+      data: number[];
+      backgroundColor: string;
+    }[];
+  }
+
 const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDate, description, contents, tagNames, tagFilterType }) => {
   const [analysisDetails, setAnalysisDetails] = useState<AnalysisDetail[]>([]);
-  const [trainingCounts, setTrainingCounts] = useState<TrainingCountData[]>([]);
+  const [chartData, setChartData] = useState<ChartData>({ labels: [], datasets: [] });
+  const [options, setOptions] = useState({ scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { display: true } } });
   const [aggregateType, setAggregateType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+
+  useEffect(() => {
+    // ウィンドウの幅に基づいて凡例の表示/非表示を切り替える
+    const updateOptions = () => {
+      const isMobile = window.innerWidth < 768; // 768pxをスマホ表示とする基準としています
+      setOptions({
+        scales: { x: { stacked: true }, y: { stacked: true } },
+        plugins: { legend: { display: !isMobile } } // スマホの場合は凡例を非表示にする
+      });
+    };
+
+    updateOptions(); // 初期表示時にオプションを設定
+    window.addEventListener('resize', updateOptions); // ウィンドウサイズが変更された時にオプションを更新
+
+    return () => window.removeEventListener('resize', updateOptions); // コンポーネントのクリーンアップ時にイベントリスナーを削除
+  }, []);
 
   useEffect(() => {
     const fetchAnalysisDetails = async () => {
@@ -69,55 +96,57 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
 
   useEffect(() => {
     const aggregateData = () => {
-
-      let aggregatedData: { [key: string]: number } = {};
-    
-      switch (aggregateType) {
-        case 'daily':
-          aggregatedData = analysisDetails.reduce((acc, { date }) => {
-            acc[date] = (acc[date] || 0) + 1;
-            return acc;
-          }, {} as { [key: string]: number });
-          break;
-        case 'weekly':
-          aggregatedData = analysisDetails.reduce((acc, { date }) => {
-            const weekStart = format(startOfWeek(new Date(date), { weekStartsOn: 1 }), 'yyyy-MM-dd');
-            acc[weekStart] = (acc[weekStart] || 0) + 1;
-            return acc;
-          }, {} as { [key: string]: number });
-          break;
-        case 'monthly':
-          aggregatedData = analysisDetails.reduce((acc, { date }) => {
-            const month = format(new Date(date), 'yyyy-MM');
-            acc[month] = (acc[month] || 0) + 1;
-            return acc;
-          }, {} as { [key: string]: number });
-          break;
-        default:
-          break;
-      }
-    
-      // 集計結果を配列に変換し、日付でソート
-      const sortedCountsArray = Object.entries(aggregatedData)
-        .map(([date, count]) => ({ date, count }))
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-      setTrainingCounts(sortedCountsArray);
+      let aggregatedData: { [key: string]: { [content: string]: number } } = {};
+  
+      analysisDetails.forEach(({ date, content }) => {
+        let formattedDate = '';
+        const dateObj = new Date(date);
+      
+        switch (aggregateType) {
+          case 'daily':
+            formattedDate = format(dateObj, 'yyyy-MM-dd');
+            break;
+          case 'weekly':
+            // 週の最初の日（例: 日曜日）をフォーマットします
+            formattedDate = format(startOfWeek(dateObj, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+            break;
+          case 'monthly':
+            // 月のフォーマット（年と月のみ）
+            formattedDate = format(dateObj, 'yyyy-MM');
+            break;
+          default:
+            formattedDate = format(dateObj, 'yyyy-MM-dd');
+        }
+      
+        if (!aggregatedData[formattedDate]) {
+          aggregatedData[formattedDate] = {};
+        }
+        if (!aggregatedData[formattedDate][content]) {
+          aggregatedData[formattedDate][content] = 0;
+        }
+        aggregatedData[formattedDate][content] += 1;
+      });
+  
+      const contents = [...new Set(analysisDetails.map(detail => detail.content))];
+      const sortedDates = Object.keys(aggregatedData).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+  
+      const datasets = contents.map(content => {
+        const color = techniqueColors[content] || '#000000'; // techniqueColorsは別途定義またはインポートする
+        return {
+          label: content,
+          data: sortedDates.map(date => aggregatedData[date][content] || 0),
+          backgroundColor: color,
+        };
+      });
+  
+      setChartData({
+        labels: sortedDates,
+        datasets,
+      });
     };
-
+  
     aggregateData();
   }, [analysisDetails, aggregateType]);
-
-  const data = {
-    labels: trainingCounts.map(item => item.date),
-    datasets: [
-      {
-        label: '技数',
-        data: trainingCounts.map(item => item.count),
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
-      },
-    ],
-  };
 
   const handleAggregateTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setAggregateType(event.target.value as 'daily' | 'weekly' | 'monthly');
@@ -138,7 +167,7 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
           <option value="monthly">月別</option>
         </select>
       </div>
-      <Bar data={data} />
+      <Bar data={chartData} options={options} />
     </>
   );
 }
