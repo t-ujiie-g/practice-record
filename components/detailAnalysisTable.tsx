@@ -16,15 +16,15 @@ interface AnalysisDetailTableProps {
     description?: string;
     contents?: string[];
     tagNames?: string[];
+    tagFilterType?: string;
   }
 
 type SortableColumn = 'id' | 'content' | 'description' | 'date';
 
-const AnalysisDetailTable: React.FC<AnalysisDetailTableProps> = ({ startDate, endDate, description, contents, tagNames }) => {
+const AnalysisDetailTable: React.FC<AnalysisDetailTableProps> = ({ startDate, endDate, description, contents, tagNames, tagFilterType }) => {
   const [analysisDetails, setAnalysisDetails] = useState<AnalysisDetail[]>([]);
   const [sortColumn, setSortColumn] = useState<string>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [tagFilterType, setTagFilterType] = useState<'and' | 'or'>('and');
 
   useEffect(() => {
     const fetchAnalysisDetails = async () => {
@@ -35,7 +35,6 @@ const AnalysisDetailTable: React.FC<AnalysisDetailTableProps> = ({ startDate, en
       if (startDate) queryParams.push(`start_date=${encodeURIComponent(startDate)}`);
       if (endDate) queryParams.push(`end_date=${encodeURIComponent(endDate)}`);
       if (description) queryParams.push(`description=${encodeURIComponent(description)}`);
-      // if (content) queryParams.push(`contents=${encodeURIComponent(content)}`);
       if (contents && contents.length > 0 && !contents.every(content => content === '')) {
         contents.forEach(content => {
           queryParams.push(`contents=${encodeURIComponent(content)}`);
@@ -75,35 +74,8 @@ const AnalysisDetailTable: React.FC<AnalysisDetailTableProps> = ({ startDate, en
     });
   };
 
-  const handleTagFilterTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTagFilterType(event.target.value as 'and' | 'or');
-  };
-
   return (
     <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
-      <div className="flex items-center space-x-4 mb-4">
-        <label className="text-sm font-medium text-gray-700">タグフィルター:</label>
-        <div className="flex items-center">
-          <input
-            type="radio"
-            name="tagFilterType"
-            value="and"
-            checked={tagFilterType === 'and'}
-            onChange={handleTagFilterTypeChange}
-            className="mr-2"
-          />
-          <label htmlFor="tagFilterTypeAnd" className="mr-4">AND</label>
-          <input
-            type="radio"
-            name="tagFilterType"
-            value="or"
-            checked={tagFilterType === 'or'}
-            onChange={handleTagFilterTypeChange}
-            className="mr-2"
-          />
-          <label htmlFor="tagFilterTypeOr">OR</label>
-        </div>
-      </div>
       <div style={{ maxHeight: '20rem', overflowY: 'auto' }}>
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">

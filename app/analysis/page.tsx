@@ -21,6 +21,7 @@ const AnalysisPage: React.FC = () => {
     const [tags, setTags] = useState<string[]>([]); // タグの状態を文字列の配列で管理
     const [description, setDescription] = useState<string>('');
     const [selectedTab, setSelectedTab] = useState<'detail' | 'chart' | 'term'>('term');
+    const [tagFilterType, setTagFilterType] = useState<'and' | 'or'>('and');
   
   // タグの追加
   const addTag = (tag: string) => {
@@ -83,6 +84,10 @@ const AnalysisPage: React.FC = () => {
     setSelectedTab(tab);
 };
 
+const handleTagFilterTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  setTagFilterType(event.target.value as 'and' | 'or');
+};
+
   return (
     <div className="pt-5">
       <h1 className="text-xl font-bold mb-4">稽古記録分析</h1>
@@ -124,28 +129,28 @@ const AnalysisPage: React.FC = () => {
       <div className="mb-4">
         <label htmlFor="content" className="block text-sm font-medium text-gray-700">技名</label>
         {contents.map((contentItem, index) => (
-                <div key={index} className="mb-4 flex items-center">
-                    <select
-                        value={contentItem}
-                        onChange={(e) => handleContentChange(index, e.target.value)}
-                        className="form-select px-4 py-2 border rounded w-full"
-                    >
-                        <option value="">選択してください</option>
-                        {CONTENTS_LIST.map((item) => (
-                            <option key={item} value={item}>{item}</option>
-                        ))}
-                    </select>
-                    {index === 0 ? (
-                        <button type="button" onClick={addContentInput} className="ml-2">
-                            <PlusIcon className="h-5 w-5 text-blue-700" />
-                        </button>
-                    ) : (
-                        <button type="button" onClick={() => removeContentInput(index)} className="ml-2">
-                            <XMarkIcon className="h-5 w-5 text-red-500" />
-                        </button>
-                    )}
-                </div>
-            ))}
+          <div key={index} className="mb-4 flex items-center">
+              <select
+                  value={contentItem}
+                  onChange={(e) => handleContentChange(index, e.target.value)}
+                  className="form-select px-4 py-2 border rounded w-full"
+              >
+                  <option value="">未選択</option>
+                  {CONTENTS_LIST.map((item) => (
+                      <option key={item} value={item}>{item}</option>
+                  ))}
+              </select>
+              {index === 0 ? (
+                  <button type="button" onClick={addContentInput} className="ml-2">
+                      <PlusIcon className="h-5 w-5 text-blue-700" />
+                  </button>
+              ) : (
+                  <button type="button" onClick={() => removeContentInput(index)} className="ml-2">
+                      <XMarkIcon className="h-5 w-5 text-red-500" />
+                  </button>
+              )}
+          </div>
+        ))}
       </div>
       <div className="mb-4">
         {tags.map((tag, index) => (
@@ -164,51 +169,78 @@ const AnalysisPage: React.FC = () => {
         />
       </div>
       <div className="mb-4">
-                <button
-                    className={`px-4 py-2 ${selectedTab === 'term' ? 'bg-blue-500 text-white' : 'bg-transparent'}`}
-                    onClick={() => handleTabChange('term')}
-                >
-                    期間分析
-                </button>
-                <button
-                    className={`px-4 py-2 ${selectedTab === 'detail' ? 'bg-blue-500 text-white' : 'bg-transparent'}`}
-                    onClick={() => handleTabChange('detail')}
-                >
-                    稽古検索
-                </button>
-                <button
-                    className={`px-4 py-2 ${selectedTab === 'chart' ? 'bg-blue-500 text-white' : 'bg-transparent'}`}
-                    onClick={() => handleTabChange('chart')}
-                >
-                    タグ分析
-                </button>
-            </div>
-            {/* 条件に基づいてコンポーネントを切り替え */}
-            {selectedTab === 'term' ? (
-                <TermAnalysisChart
-                startDate={startDate}
-                endDate={endDate}
-                description={description}
-                contents={contents}
-                tagNames={tags.filter(tag => tag.trim() !== '')}
+        <button
+            className={`px-4 py-2 mx-1 rounded-lg border ${selectedTab === 'term' ? 'bg-blue-400 text-white' : 'bg-transparent border-gray-300'}`}
+            onClick={() => handleTabChange('term')}
+        >
+            期間分析
+        </button>
+        <button
+            className={`px-4 py-2 mx-1 rounded-lg border ${selectedTab === 'detail' ? 'bg-blue-400 text-white' : 'bg-transparent border-gray-300'}`}
+            onClick={() => handleTabChange('detail')}
+        >
+            稽古検索
+        </button>
+        <button
+            className={`px-4 py-2 mx-1 rounded-lg border ${selectedTab === 'chart' ? 'bg-blue-400 text-white' : 'bg-transparent border-gray-300'}`}
+            onClick={() => handleTabChange('chart')}
+        >
+            タグ分析
+        </button>
+      </div>
+      {['term', 'detail'].includes(selectedTab) && (
+        <div className="flex items-center space-x-4 mb-4">
+          <label className="text-sm font-medium text-gray-700">タグフィルター:</label>
+          <div className="flex items-center">
+            <input
+              type="radio"
+              name="tagFilterType"
+              value="and"
+              checked={tagFilterType === 'and'}
+              onChange={handleTagFilterTypeChange}
+              className="mr-2"
             />
-            ) : selectedTab === 'detail' ? (
-                <AnalysisDetailTable
-                    startDate={startDate}
-                    endDate={endDate}
-                    description={description}
-                    contents={contents}
-                    tagNames={tags.filter(tag => tag.trim() !== '')}
-                />
-            ) : (
-                <TagAnalysisChart
-                    startDate={startDate}
-                    endDate={endDate}
-                    description={description}
-                    contents={contents}
-                    tagNames={tags.filter(tag => tag.trim() !== '')}
-                />
-            )}
+            <label htmlFor="tagFilterTypeAnd" className="mr-4">AND</label>
+            <input
+              type="radio"
+              name="tagFilterType"
+              value="or"
+              checked={tagFilterType === 'or'}
+              onChange={handleTagFilterTypeChange}
+              className="mr-2"
+            />
+            <label htmlFor="tagFilterTypeOr">OR</label>
+          </div>
+        </div>         
+      )}
+      {/* 条件に基づいてコンポーネントを切り替え */}
+      {selectedTab === 'term' ? (
+          <TermAnalysisChart
+          startDate={startDate}
+          endDate={endDate}
+          description={description}
+          contents={contents}
+          tagNames={tags.filter(tag => tag.trim() !== '')}
+          tagFilterType={tagFilterType}
+      />
+      ) : selectedTab === 'detail' ? (
+          <AnalysisDetailTable
+              startDate={startDate}
+              endDate={endDate}
+              description={description}
+              contents={contents}
+              tagNames={tags.filter(tag => tag.trim() !== '')}
+              tagFilterType={tagFilterType}
+          />
+      ) : (
+          <TagAnalysisChart
+              startDate={startDate}
+              endDate={endDate}
+              description={description}
+              contents={contents}
+              tagNames={tags.filter(tag => tag.trim() !== '')}
+          />
+      )}
     </div>
   );
 };

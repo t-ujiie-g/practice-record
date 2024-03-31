@@ -26,13 +26,13 @@ interface TermAnalysisChartProps {
     description?: string;
     contents?: string[];
     tagNames?: string[];
+    tagFilterType?: string;
   }
 
-const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDate, description, contents, tagNames }) => {
+const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDate, description, contents, tagNames, tagFilterType }) => {
   const [analysisDetails, setAnalysisDetails] = useState<AnalysisDetail[]>([]);
   const [trainingCounts, setTrainingCounts] = useState<TrainingCountData[]>([]);
   const [aggregateType, setAggregateType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
-  const [tagFilterType, setTagFilterType] = useState<'and' | 'or'>('and');
 
   useEffect(() => {
     const fetchAnalysisDetails = async () => {
@@ -43,7 +43,6 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
       if (startDate) queryParams.push(`start_date=${encodeURIComponent(startDate)}`);
       if (endDate) queryParams.push(`end_date=${encodeURIComponent(endDate)}`);
       if (description) queryParams.push(`description=${encodeURIComponent(description)}`);
-      // if (content) queryParams.push(`contents=${encodeURIComponent(content)}`);
       if (contents && contents.length > 0 && !contents.every(content => content === '')) {
         contents.forEach(content => {
           queryParams.push(`contents=${encodeURIComponent(content)}`);
@@ -70,6 +69,7 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
 
   useEffect(() => {
     const aggregateData = () => {
+
       let aggregatedData: { [key: string]: number } = {};
     
       switch (aggregateType) {
@@ -123,10 +123,6 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
     setAggregateType(event.target.value as 'daily' | 'weekly' | 'monthly');
   };
 
-  const handleTagFilterTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTagFilterType(event.target.value as 'and' | 'or');
-  };
-
   return (
     <>
       <div className="flex items-center space-x-4 mb-4">
@@ -141,29 +137,6 @@ const TermAnalysisChart: React.FC<TermAnalysisChartProps> = ({ startDate, endDat
           <option value="weekly">週別</option>
           <option value="monthly">月別</option>
         </select>
-      </div>
-      <div className="flex items-center space-x-4 mb-4">
-        <label className="text-sm font-medium text-gray-700">タグフィルター:</label>
-        <div className="flex items-center">
-          <input
-            type="radio"
-            name="tagFilterType"
-            value="and"
-            checked={tagFilterType === 'and'}
-            onChange={handleTagFilterTypeChange}
-            className="mr-2"
-          />
-          <label htmlFor="tagFilterTypeAnd" className="mr-4">AND</label>
-          <input
-            type="radio"
-            name="tagFilterType"
-            value="or"
-            checked={tagFilterType === 'or'}
-            onChange={handleTagFilterTypeChange}
-            className="mr-2"
-          />
-          <label htmlFor="tagFilterTypeOr">OR</label>
-        </div>
       </div>
       <Bar data={data} />
     </>
